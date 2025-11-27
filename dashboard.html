@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Progress Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Load Chart.js from local file instead of CDN -->
+    <script src="chart.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>Progress Dashboard</h1>
+
+        <div class="chart-container">
+            <h2>Submissions Over Time</h2>
+            <canvas id="submissions-chart"></canvas>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <h2>💪 Strong Areas</h2>
+                <h4>Top Topics (by 'Mastered' count)</h4>
+                <ol id="strong-topics"></ol>
+                <h4>Top Patterns (by 'Mastered' count)</h4>
+                <ol id="strong-patterns"></ol>
+            </div>
+            <div class="stat-box">
+                <h2>🧠 Weak Areas</h2>
+                <h4>Top Topics (by 'Low' confidence count)</h4>
+                <ol id="weak-topics"></ol>
+                <h4>Top Patterns (by 'Low' confidence count)</h4>
+                <ol id="weak-patterns"></ol>
+            </div>
+        </div>
+
+                <!-- Upcoming Reviews -->
+        <div class="review-forecast-container">
+            <h2>📅 Upcoming Reviews</h2>
+            <div class="review-summary">
+                <div class="review-stat-box">
+                    <div class="review-number" id="total-due">0</div>
+                    <div class="review-label">Total Due</div>
+                </div>
+                <div class="review-stat-box">
+                    <div class="review-number" id="due-today">0</div>
+                    <div class="review-label">Due Today</div>
+                </div>
+                <div class="review-stat-box">
+                    <div class="review-number" id="due-week">0</div>
+                    <div class="review-label">Next 7 Days</div>
+                </div>
+                <div class="review-stat-box">
+                    <div class="review-number" id="due-month">0</div>
+                    <div class="review-label">Next 30 Days</div>
+                </div>
+            </div>
+            <div id="daily-breakdown"></div>
+        </div>
+
+        <!-- Time Statistics -->
+        <div class="time-stats-container">
+            <h2>⏱️ Time Statistics</h2>
+
+            <div class="time-stats-grid">
+                <div class="stat-box">
+                    <h3>📊 Average Solve Times</h3>
+                    <div id="avg-times">
+                        <p>No data yet.</p>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <h3>⚡ Fastest Solves</h3>
+                    <div id="fastest-solves">
+                        <p>No data yet.</p>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <h3>🐌 Slowest Solves</h3>
+                    <div id="slowest-solves">
+                        <p>No data yet.</p>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <h3>📈 Monthly Trends</h3>
+                    <div id="time-trends">
+                        <p>Need at least 5 submissions to show trends.</p>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <h3>📅 Weekly Trends</h3>
+                    <div id="weekly-trends">
+                        <p>Need data from both weeks.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="dashboard.js"></script>
+</body>
+</html>

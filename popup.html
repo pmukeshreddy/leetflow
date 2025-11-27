@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>LeetCode Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ensure emojis render properly */
+        body, button, a {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Color Emoji", sans-serif;
+        }
+
+    </style>
+</head>
+<body style="width: 500px; min-height: 400px;">
+<!-- Inside popup.html -->
+<div class="header">
+    <h1>My Tracker</h1>
+    <div>
+        <a href="settings.html" target="_blank" id="settings-link" title="Settings">⚙️</a>
+        <a href="dashboard.html" target="_blank" id="dashboard-link" title="Dashboard">📊 Dashboard</a>
+        <button id="refresh-btn" title="Refresh problem list">🔄 Refresh List</button>
+    </div>
+</div>
+
+
+<!-- Phase Filters -->
+<div class="filter-section">
+    <label>Filter by Phase:</label>
+    <div id="phase-filters">
+        <!-- Checkboxes will be dynamically inserted here -->
+    </div>
+</div>
+
+<!-- Main Filters -->
+<div class="filter-section main-filters">
+    <select id="filter-difficulty">
+        <option value="all">All Difficulties</option>
+        <!-- Options will be dynamically inserted here -->
+    </select>
+    <select id="filter-topic">
+        <option value="all">All Topics</option>
+        <!-- Options will be dynamically inserted here -->
+    </select>
+    <select id="filter-status">
+        <option value="all">All Statuses</option>
+        <option value="due">Review Due</option>
+        <option value="not-started">Not Started</option>
+        <option value="solved">Solved</option>
+    </select>
+</div>
+
+<!-- Search Filter -->
+<div class="filter-section">
+    <input type="text" id="search-box" placeholder="Search by problem name...">
+</div>
+
+<ul id="problem-list"></ul>
+<script src="popup.js"></script>
+</body>
+</html>

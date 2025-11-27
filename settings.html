@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Settings - LeetCode Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="settings-container">
+    <h1>⚙️ Settings</h1>
+
+    <!-- Google Sheet Configuration -->
+    <section class="settings-section">
+        <h2>📊 Problem List Source</h2>
+
+        <div class="setting-item">
+            <label for="sheet-url">Google Sheet URL:</label>
+            <input type="text" id="sheet-url" placeholder="Paste your published Google Sheet CSV URL here..."
+                   style="width: 100%; padding: 8px; margin-top: 4px; font-size: 12px; font-family: monospace;">
+            <p class="setting-help">
+                <strong>How to set up your Google Sheet:</strong><br>
+                1️⃣ Make a copy of the <a
+                    href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQNlOGHAZnG-51FtCEeJdG6WLCwlZXM6yE0WL2glIP9t8MJA00XSraGJy5-8GheEglFSSjokeo3NY0X/pub?output=csv"
+                    target="_blank" style="color: #007bff; font-weight: 600;">sample sheet</a><br>
+                2️⃣ Click <strong>File → Share → Publish to web</strong><br>
+                3️⃣ Select <strong>"Entire Document"</strong> and <strong>"Comma-separated values (.csv)"</strong><br>
+                4️⃣ Click <strong>Publish</strong> and copy the URL<br>
+                5️⃣ Paste it above and click Save<br>
+                <br>
+                <strong>Required columns:</strong> <code>url</code>, <code>title</code>, <code>difficulty</code>, <code>topic</code>,
+                <code>pattern</code>, <code>phase</code>
+            </p>
+            <p class="setting-help"
+               style="margin-top: 8px; padding: 8px; background-color: #e7f3ff; border-left: 3px solid #007bff;">
+                💡 <strong>Tip:</strong> The sample sheet contains a curated list of LeetCode problems organized by topic
+                and difficulty.
+                Customize it to match your study plan!
+            </p>
+        </div>
+    </section>
+
+    <!-- Spaced Repetition Settings -->
+    <section class="settings-section">
+        <h2>📚 Spaced Repetition</h2>
+
+        <div class="setting-item">
+            <label for="growth-factor">Growth Factor:</label>
+            <select id="growth-factor">
+                <option value="1.5">Conservative (1.5x)</option>
+                <option value="1.7">Balanced (1.7x)</option>
+                <option value="2.0" selected>Aggressive (2x)</option>
+            </select>
+            <p class="setting-help">
+                <strong>Controls spacing between reviews.</strong><br>
+                • Conservative (1.5x): Review more frequently - better for retention<br>
+                • Aggressive (2x): Review less often - covers more problems faster<br>
+                Example: Problem goes from 2 days → 4 days → 8 days → 16 days
+            </p>
+        </div>
+
+        <div class="setting-item">
+            <label for="max-interval">Maximum Review Interval:</label>
+            <input type="number" id="max-interval" value="40" min="7" max="365">
+            <span>days</span>
+            <p class="setting-help">
+                <strong>Longest you'll wait before reviewing a problem.</strong><br>
+                Even if you've mastered it, you'll review at least once every X days.<br>
+                Recommended: 30-40 days (about once a month)
+            </p>
+        </div>
+
+        <div class="setting-item">
+            <label for="base-interval">Starting Interval:</label>
+            <input type="number" id="base-interval" value="1" min="1" max="7">
+            <span>days</span>
+            <p class="setting-help">
+                <strong>How soon you'll review a problem after first solving it.</strong><br>
+                1 day = Review tomorrow (best for retention)<br>
+                3 days = Review in 3 days (if you're confident)
+            </p>
+        </div>
+
+        <div class="setting-item">
+            <label for="leech-threshold">Leech Threshold:</label>
+            <input type="number" id="leech-threshold" value="3" min="2" max="10">
+            <span>failures</span>
+            <p class="setting-help">
+                <strong>Marks problems you're struggling with.</strong><br>
+                After X "Low" confidence submissions, problem gets a 🩸 Leech tag.<br>
+                This helps you identify which problems need extra focus.<br>
+                Recommended: 3-5 failures
+            </p>
+        </div>
+
+        <div class="setting-item">
+            <label for="max-daily-reviews">Max Reviews Per Day:</label>
+            <input type="number" id="max-daily-reviews" value="15" min="1" max="20">
+            <span>problems</span>
+            <p class="setting-help">
+                <strong>Prevents review overload.</strong><br>
+                When scheduling reviews, the system finds days with fewer than this many reviews.<br>
+                Helps spread out workload if you get many "Low" confidence submissions.<br>
+                Recommended: 10-20 problems per day
+            </p>
+        </div>
+
+    </section>
+
+    <!-- Time-Based Suggestions -->
+    <section class="settings-section">
+        <h2>⏱️ Time-Based Confidence Suggestions</h2>
+        <p class="setting-help">
+            <strong>Auto-suggest confidence based on solve time.</strong><br>
+            Set time thresholds (in minutes) for each difficulty level. The confidence button will be pre-selected based
+            on how long you took.
+        </p>
+
+        <div class="setting-item">
+            <h4>Easy Problems</h4>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;">
+                <div>
+                    <label>Mastered: &lt;</label>
+                    <input type="number" id="easy-mastered" value="5" min="1" max="60" style="width: 60px;">
+                    <span>min</span>
+                </div>
+                <div>
+                    <label>High: &lt;</label>
+                    <input type="number" id="easy-high" value="15" min="1" max="60" style="width: 60px;">
+                    <span>min</span>
+                </div>
+                <div>
+                    <label>Medium: &lt;</label>
+                    <input type="number" id="easy-medium" value="30" min="1" max="120" style="width: 60px;">
+                    <span>min</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <h4>Medium Problems</h4>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;">
+                <div>
+                    <label>Mastered: &lt;</label>
+                    <input type="number" id="medium-mastered" value="10" min="1" max="60" style="width: 60px;">
+                    <span>min</span>
+                </div>
+                <div>
+                    <label>High: &lt;</label>
+                    <input type="number" id="medium-high" value="25" min="1" max="90" style="width: 60px;">
+                    <span>min</span>
+                </div>
+                <div>
+                    <label>Medium: &lt;</label>
+                    <input type="number" id="medium-medium" value="45" min="1" max="120" style="width: 60px;">
+                    <span>min</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <h4>Hard Problems</h4>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;">
+                <div>
+                    <label>Mastered: &lt;</label>
+                    <input type="number" id="hard-mastered" value="20" min="1" max="90" style="width: 60px;">
+                    <span>min</span>
+                </div>
+                <div>
+                    <label>High: &lt;</label>
+                    <input type="number" id="hard-high" value="40" min="1" max="120" style="width: 60px;">
+                    <span>min</span>
+                </div>
+                <div>
+                    <label>Medium: &lt;</label>
+                    <input type="number" id="hard-medium" value="60" min="1" max="180" style="width: 60px;">
+                    <span>min</span>
+                </div>
+            </div>
+        </div>
+
+        <p class="setting-help" style="margin-top: 12px;">
+            Example: If "Easy - Mastered" is set to 5 minutes, solving an easy problem in under 5 minutes will
+            pre-select the "Mastered" button.
+        </p>
+    </section>
+
+    <!-- Study Schedule -->
+    <section class="settings-section">
+        <h2>📅 Study Schedule</h2>
+        <p class="setting-help">
+            <strong>Which days do you want to study?</strong><br>
+            Reviews will only be scheduled on checked days. Uncheck your rest days!<br>
+            ⚠️ Must select at least one day.
+        </p>
+
+        <div class="study-days">
+            <label><input type="checkbox" id="day-0"> Sunday</label>
+            <label><input type="checkbox" id="day-1" checked> Monday</label>
+            <label><input type="checkbox" id="day-2" checked> Tuesday</label>
+            <label><input type="checkbox" id="day-3" checked> Wednesday</label>
+            <label><input type="checkbox" id="day-4" checked> Thursday</label>
+            <label><input type="checkbox" id="day-5" checked> Friday</label>
+            <label><input type="checkbox" id="day-6" checked> Saturday</label>
+        </div>
+    </section>
+
+    <!-- Data Management -->
+    <section class="settings-section">
+        <h2>💾 Data Management</h2>
+
+        <div class="setting-item">
+            <button id="export-btn" class="primary-btn">📥 Export Progress</button>
+            <p class="setting-help">
+                <strong>Backup your data.</strong><br>
+                Saves all your progress to a file on your computer.<br>
+                Do this before resetting or switching devices!
+            </p>
+        </div>
+
+        <div class="setting-item">
+            <label for="import-file" class="primary-btn">📤 Import Progress</label>
+            <input type="file" id="import-file" accept=".json" style="display: none;">
+            <p class="setting-help">
+                <strong>Restore from a backup.</strong><br>
+                Replaces ALL current data with data from your backup file.<br>
+                ⚠️ Your current progress will be lost!
+            </p>
+        </div>
+
+        <div class="setting-item">
+            <button id="soft-reset-btn" class="warning-btn">🔄 Reschedule All Due Items</button>
+            <p class="setting-help">
+                <strong>Fix overdue reviews.</strong><br>
+                If you have too many reviews piled up, this spreads them over the next 3-4 days.<br>
+                Your progress (stages, stats) stays intact - only dates change.
+            </p>
+        </div>
+
+        <div class="setting-item">
+            <button id="hard-reset-btn" class="danger-btn">⚠️ Reset All Progress</button>
+            <p class="setting-help">
+                <strong>⚠️ NUCLEAR OPTION - Start completely fresh.</strong><br>
+                Erases ALL submissions, stages, and history.<br>
+                Like you never solved any problems.<br>
+                <span style="color: #dc3545; font-weight: bold;">Export a backup first!</span>
+            </p>
+        </div>
+    </section>
+
+    <!-- Undo -->
+    <section class="settings-section">
+        <h2>↩️ Undo Last Action</h2>
+        <div class="setting-item">
+            <button id="undo-btn" class="secondary-btn" disabled>
+                Undo Last Submission
+            </button>
+            <p id="undo-info" class="setting-help">
+                <strong>Oops? Take it back!</strong><br>
+                If you accidentally submitted the wrong confidence level, click here within 5 minutes to undo it.
+            </p>
+        </div>
+    </section>
+
+    <!-- Save Button -->
+    <div class="settings-actions">
+        <button id="save-btn" class="success-btn">💾 Save Settings</button>
+        <button id="cancel-btn" class="secondary-btn">Cancel</button>
+    </div>
+</div>
+
+<script src="settings.js"></script>
+</body>
+</html>
