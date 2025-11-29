@@ -199,6 +199,45 @@
             letter-spacing: 0.5px;
         }
 
+        /* Confidence select dropdown */
+        .attempt-confidence {
+            padding: 8px 10px;
+            border: 2px solid #ced4da;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            background-color: #ffffff;
+            cursor: pointer;
+        }
+
+        .attempt-confidence:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        /* Color-coded option styling (visual cue) */
+        .attempt-confidence option[value="mastered"] {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .attempt-confidence option[value="high"] {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .attempt-confidence option[value="medium"] {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .attempt-confidence option[value="low"] {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .attempt-confidence option[value="auto"] {
+            background-color: #e7f3ff;
+            color: #004085;
+        }
+
         .confidence-low {
             background-color: #f8d7da;
             color: #721c24;
@@ -281,6 +320,7 @@
             margin-right: 10px;
         }
 
+
     </style>
 </head>
 <body>
@@ -337,11 +377,14 @@
 
         <!-- Attempts Section (EDITABLE) -->
         <div class="attempts-section">
-            <h3>📊 Submission History (Edit Time Only)</h3>
+            <h3>📊 Submission History</h3>
             <p class="help-text">
-                💡 <strong>How it works:</strong> Change the time for any attempt, and confidence will be auto-calculated
-                based on your time thresholds.
-                All SRS metrics (stage, lapses, next review) are recalculated automatically when you save.
+                💡 <strong>How it works:</strong> Edit time and/or confidence for any attempt.
+                <br>• <strong>Auto mode:</strong> Confidence calculated from time using your thresholds
+                <br>• <strong>Manual override:</strong> Choose any confidence level (overrides time-based calculation)
+                <br>• All SRS metrics (stage, lapses, next review) update in <strong>real-time preview</strong> as you
+                edit
+                <br>• Click "Save" to persist changes to storage
             </p>
             <div class="attempts-list" id="attempts-list">
                 <!-- Attempts will be inserted here -->

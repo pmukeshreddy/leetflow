@@ -96,7 +96,7 @@ const SRSEngine = {
     },
 
     // Process a single attempt and return updated problem state
-    processAttempt(problem, attempt, settings, allProblems) {
+    processAttempt(problem, attempt, settings, allProblems, isFirstAttempt = false) {
         const confidence = attempt.confidence;
 
         // Update status
@@ -108,7 +108,9 @@ const SRSEngine = {
 
         // Update lapses and consecutive successes
         if (confidence === 'low') {
-            if (problem.attempts && problem.attempts.length > 0) {
+            // Don't count first attempt as a lapse (it's their first try!)
+            // But DO count it during recalculation if it's not the first attempt
+            if (!isFirstAttempt) {
                 problem.lapses = (problem.lapses || 0) + 1;
             }
             problem.consecutiveSuccesses = 0;
@@ -137,13 +139,13 @@ const SRSEngine = {
             settings.maxDailyReviews || 15
         );
 
-        // Update problem
+        // Update problem - ALWAYS recalculate these
         problem.srsStage = newStage;
         problem.nextReviewDate = nextDate;
         problem.lastConfidence = confidence;
         problem.isLeech = (problem.lapses >= settings.leechThreshold && problem.srsStage < 3);
 
-        // Update attempt with calculated values
+        // Update attempt with calculated values - ALWAYS recalculate
         attempt.stage = newStage;
         attempt.interval = intervalDays;
 
@@ -152,9 +154,22 @@ const SRSEngine = {
 
     // Recalculate entire problem from scratch by replaying all attempts
     recalculateProblem(problem, settings, allProblems) {
-        // Reset to clean state
+        // Start with ONLY the base metadata from the sheet (never changes)
+        // All progress-related fields are reset to initial state
         const cleanProblem = {
-            ...problem,
+            // Metadata from sheet (immutable)
+            url: problem.url,
+            title: problem.title,
+            difficulty: problem.difficulty,
+            topic: problem.topic,
+            pattern: problem.pattern,
+            phase: problem.phase,
+            name: problem.name, // Some problems might have this
+
+            // Keep the attempts array (we'll replay through it)
+            attempts: problem.attempts || [],
+
+            // Reset ALL progress fields to initial state
             status: 'Not Started',
             srsStage: 0,
             lapses: 0,
@@ -164,22 +179,31 @@ const SRSEngine = {
             nextReviewDate: null
         };
 
-        // Replay each attempt in order
-        const attempts = problem.attempts || [];
+        // Replay each attempt in order - recalculating EVERYTHING
+        const attempts = cleanProblem.attempts;
         for (let i = 0; i < attempts.length; i++) {
             const attempt = attempts[i];
+            const isFirstAttempt = (i === 0); // First attempt doesn't count as lapse
 
-            // Auto-calculate confidence from time if not set
-            if (!attempt.confidence && attempt.time !== undefined && problem.difficulty) {
-                attempt.confidence = this.suggestConfidence(
-                    attempt.time,
-                    problem.difficulty,
-                    settings
-                );
+            // Auto-calculate confidence from time ONLY if not manually set
+            // This allows manual override while keeping auto-calculation as default
+            if (attempt.time !== undefined && problem.difficulty) {
+                if (!attempt.confidence) {
+                    // No manual override - calculate from time
+                    attempt.confidence = this.suggestConfidence(
+                        attempt.time,
+                        problem.difficulty,
+                        settings
+                    );
+                }
+                // else: confidence was manually set, keep it
             }
 
-            // Process this attempt
-            this.processAttempt(cleanProblem, attempt, settings, allProblems);
+            // Process this attempt - this will update:
+            // - status, srsStage, lapses, consecutiveSuccesses
+            // - isLeech, lastConfidence, nextReviewDate
+            // - attempt.stage, attempt.interval
+            this.processAttempt(cleanProblem, attempt, settings, allProblems, isFirstAttempt);
         }
 
         return cleanProblem;

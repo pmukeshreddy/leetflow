@@ -130,44 +130,72 @@ function renderAttempts() {
         const dateStr = date.toISOString().slice(0, 16); // Format for datetime-local input
         const timeMinutes = Math.floor(attempt.time / 60);
 
-        // Calculate what confidence WOULD be based on time
+        // Calculate what confidence WOULD be based on time (for auto suggestion)
         const suggestedConfidence = SRSEngine.suggestConfidence(
             attempt.time,
             currentProblem.difficulty,
             settings
         );
 
-        // Use existing confidence or suggested
-        const displayConfidence = attempt.confidence || suggestedConfidence;
+        // Determine if this is auto or manual
+        // If attempt.confidence exists, it's manual. If not, it's auto.
+        const isManual = !!attempt.confidence;
+        const currentConfidence = attempt.confidence || suggestedConfidence;
 
         return `
             <div class="attempt-item" data-index="${index}">
-                <input
-                    type="datetime-local"
-                    class="attempt-date"
-                    value="${dateStr}"
-                    data-index="${index}"
-                >
-                <div class="time-input-wrapper">
+                <div class="attempt-field">
+                    <label>📅 Date & Time</label>
                     <input
-                        type="number"
-                        class="attempt-time"
-                        value="${timeMinutes}"
-                        min="0"
-                        placeholder="Minutes"
+                        type="datetime-local"
+                        class="attempt-date"
+                        value="${dateStr}"
                         data-index="${index}"
                     >
-                    <span>min</span>
                 </div>
-                <div class="confidence-display confidence-${displayConfidence}">
-                    ${displayConfidence.toUpperCase()}
+                <div class="attempt-field">
+                    <label>⏱️ Time Spent</label>
+                    <div class="time-input-wrapper">
+                        <input
+                            type="number"
+                            class="attempt-time"
+                            value="${timeMinutes}"
+                            min="0"
+                            placeholder="0"
+                            data-index="${index}"
+                        >
+                        <span class="unit">minutes</span>
+                    </div>
                 </div>
-                <button class="delete-attempt-btn" data-index="${index}">✕</button>
+                <div class="attempt-field">
+                    <label>🎯 Confidence</label>
+                    <select class="attempt-confidence" data-index="${index}">
+                        <option value="auto" ${!isManual ? 'selected' : ''}>
+                            Auto (${suggestedConfidence})
+                        </option>
+                        <option value="mastered" ${currentConfidence === 'mastered' && isManual ? 'selected' : ''}>
+                            Mastered
+                        </option>
+                        <option value="high" ${currentConfidence === 'high' && isManual ? 'selected' : ''}>
+                            High
+                        </option>
+                        <option value="medium" ${currentConfidence === 'medium' && isManual ? 'selected' : ''}>
+                            Medium
+                        </option>
+                        <option value="low" ${currentConfidence === 'low' && isManual ? 'selected' : ''}>
+                            Low
+                        </option>
+                    </select>
+                </div>
+                <div class="attempt-field">
+                    <label>&nbsp;</label>
+                    <button class="delete-attempt-btn" data-index="${index}">✕ Delete</button>
+                </div>
             </div>
         `;
     }).join('');
 
-    // Add event listeners for time changes (live preview of confidence)
+    // Add event listeners for time changes (updates Auto suggestion text)
     document.querySelectorAll('.attempt-time').forEach(input => {
         input.addEventListener('input', (e) => {
             const index = parseInt(e.target.dataset.index);
@@ -180,9 +208,44 @@ function renderAttempts() {
                 settings
             );
 
-            const confidenceDisplay = e.target.closest('.attempt-item').querySelector('.confidence-display');
-            confidenceDisplay.textContent = newConfidence.toUpperCase();
-            confidenceDisplay.className = `confidence-display confidence-${newConfidence}`;
+            // Update the "Auto" option text to show new suggestion
+            const confidenceSelect = e.target.closest('.attempt-item').querySelector('.attempt-confidence');
+            const autoOption = confidenceSelect.querySelector('option[value="auto"]');
+            autoOption.textContent = `Auto (${newConfidence})`;
+
+            // If currently on Auto, update the preview immediately
+            if (confidenceSelect.value === 'auto') {
+                // Update time in memory
+                currentProblem.attempts[index].time = timeSeconds;
+                delete currentProblem.attempts[index].confidence; // Keep it auto
+
+                // Recalculate preview
+                const recalculated = SRSEngine.recalculateProblem(currentProblem, settings, allProblems);
+                currentProblem = recalculated;
+                updateStatsDisplay();
+            }
+        });
+    });
+
+    // Add event listeners for confidence changes (live preview)
+    document.querySelectorAll('.attempt-confidence').forEach(select => {
+        select.addEventListener('change', (e) => {
+            const index = parseInt(e.target.dataset.index);
+            const newConfidence = e.target.value;
+
+            if (newConfidence === 'auto') {
+                // User chose auto - delete manual override
+                delete currentProblem.attempts[index].confidence;
+            } else {
+                // User chose manual - save it
+                currentProblem.attempts[index].confidence = newConfidence;
+            }
+
+            // Recalculate preview immediately
+            const recalculated = SRSEngine.recalculateProblem(currentProblem, settings, allProblems);
+            currentProblem = recalculated;
+            updateStatsDisplay();
+            renderAttempts(); // Re-render to show updated stage/interval per attempt
         });
     });
 
@@ -217,12 +280,16 @@ document.getElementById('add-attempt-btn').addEventListener('click', () => {
     currentProblem.attempts.push({
         date: now.toISOString(),
         time: 0, // Will be set by user
-        confidence: null, // Will be auto-calculated
+        // Don't set confidence - let it auto-calculate
         stage: 0,
         interval: 0
     });
 
     renderAttempts();
+
+    // ✅ FIX: Recalculate preview (like deleteAttempt does)
+    const recalculated = SRSEngine.recalculateProblem(currentProblem, settings, allProblems);
+    currentProblem = recalculated;
     updateStatsDisplay();
 });
 
@@ -247,29 +314,95 @@ document.getElementById('reset-btn').addEventListener('click', () => {
 
 // Save changes with full recalculation
 document.getElementById('save-btn').addEventListener('click', async () => {
-    // Update attempts from form
+    console.log('=== SAVE & RECALCULATE STARTED ===');
+    console.log('Philosophy: Recalculate EVERYTHING from scratch. No shortcuts.');
+
+    // Step 1: Update attempts with edited values from form
     const attemptItems = document.querySelectorAll('.attempt-item');
     attemptItems.forEach((item, index) => {
         if (!currentProblem.attempts[index]) return;
 
         const dateInput = item.querySelector('.attempt-date').value;
         const timeMinutes = parseInt(item.querySelector('.attempt-time').value) || 0;
+        const confidenceValue = item.querySelector('.attempt-confidence').value;
 
+        // Update the raw data (date and time - these are always inputs)
         currentProblem.attempts[index].date = new Date(dateInput).toISOString();
         currentProblem.attempts[index].time = timeMinutes * 60; // Convert to seconds
-        // Confidence will be auto-calculated in recalculation
+
+        // Handle confidence: auto vs manual
+        if (confidenceValue === 'auto') {
+            // User chose auto - delete so it gets recalculated from time
+            delete currentProblem.attempts[index].confidence;
+        } else {
+            // User chose manual override - save it
+            currentProblem.attempts[index].confidence = confidenceValue;
+        }
+
+        // Delete remaining calculated fields (they'll be recalculated)
+        delete currentProblem.attempts[index].stage;      // Will be recalculated by SRS
+        delete currentProblem.attempts[index].interval;   // Will be recalculated by SRS
+
+        console.log(`Attempt ${index + 1} input:`, {
+            date: currentProblem.attempts[index].date,
+            timeMinutes: timeMinutes,
+            timeSeconds: timeMinutes * 60,
+            confidence: confidenceValue === 'auto' ? 'auto (will calculate)' : confidenceValue + ' (manual)',
+            note: 'Stage and interval will be recalculated'
+        });
     });
 
-    // Recalculate entire problem using SRS engine
+    console.log('Before recalculation:', {
+        status: currentProblem.status,
+        srsStage: currentProblem.srsStage,
+        lapses: currentProblem.lapses,
+        lastConfidence: currentProblem.lastConfidence,
+        nextReviewDate: currentProblem.nextReviewDate,
+        consecutiveSuccesses: currentProblem.consecutiveSuccesses,
+        isLeech: currentProblem.isLeech
+    });
+
+    // Step 2: Recalculate EVERYTHING from scratch using SRS engine
+    // This will:
+    // - Reset problem to clean state
+    // - Replay all attempts through SRS algorithm
+    // - For each attempt:
+    //   * If confidence exists: use it (manual override)
+    //   * If confidence missing: calculate from time (auto)
+    // - Recalculate: status, stage, lapses, consecutive successes,
+    //                leech status, last confidence, next review date
+    // - Recalculate for each attempt: stage, interval
     const recalculated = SRSEngine.recalculateProblem(currentProblem, settings, allProblems);
 
-    // Update in storage
+    console.log('After recalculation:', {
+        status: recalculated.status,
+        srsStage: recalculated.srsStage,
+        lapses: recalculated.lapses,
+        lastConfidence: recalculated.lastConfidence,
+        nextReviewDate: recalculated.nextReviewDate,
+        consecutiveSuccesses: recalculated.consecutiveSuccesses,
+        isLeech: recalculated.isLeech
+    });
+
+    console.log('Attempt details after recalculation:');
+    recalculated.attempts.forEach((att, idx) => {
+        console.log(`  Attempt ${idx + 1}:`, {
+            time: `${Math.floor(att.time / 60)} min`,
+            confidence: att.confidence,
+            confidenceSource: currentProblem.attempts[idx].confidence ? 'manual' : 'auto',
+            stage: att.stage,
+            interval: `${att.interval} days`
+        });
+    });
+
+    // Step 3: Save to storage
     allProblems[currentProblemIndex] = recalculated;
     await chrome.storage.local.set({ problems: allProblems });
 
+    console.log('=== SAVED TO STORAGE ===');
     alert('✅ Changes saved and recalculated using SRS algorithm!');
 
-    // Reload to show updated stats
+    // Step 4: Reload UI to show updated stats
     currentProblem = recalculated;
     updateStatsDisplay();
     renderAttempts();

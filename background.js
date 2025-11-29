@@ -270,10 +270,14 @@ if (request.action === 'submitAttempt') {
             if (!problem.attempts) {
                 problem.attempts = [];
             }
+
+            // Check if this is the first attempt (for lapse counting)
+            const isFirstAttempt = problem.attempts.length === 0;
+
             problem.attempts.push(newAttempt);
 
             // Use SRS engine to process this attempt
-            SRSEngine.processAttempt(problem, newAttempt, settings, problems);
+            SRSEngine.processAttempt(problem, newAttempt, settings, problems, isFirstAttempt);
 
             // Save everything
             chrome.storage.local.set({
