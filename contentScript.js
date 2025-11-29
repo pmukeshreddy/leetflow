@@ -35,7 +35,7 @@ function createWidget() {
                 position: fixed;
                 bottom: 20px;
                 right: 20px;
-                width: 220px;
+                width: 250px;
                 background-color: #ffffff;
                 border-radius: 8px;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.15);
